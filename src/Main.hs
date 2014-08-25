@@ -1,4 +1,5 @@
 import Data.List (isSuffixOf)
+import Data.Functor
 import System.IO
 import System.Directory
 import System.Environment (getArgs)
@@ -17,8 +18,9 @@ readField h = go fieldWidth where
    go 0 = return []
    go i = do 
      c <- hGetChar h
-     t <- go (i-1)
-     return (c:t)
+     if c /= ' '
+       then (c:) <$> go (i-1)
+       else return []
 
 getCorr :: String -> IO Integer
 getCorr fname = withBinaryFile fname ReadMode collect where
@@ -51,6 +53,7 @@ fixCorrections :: [(String, Integer)] -> Integer -> IO [String]
 fixCorrections xs i = go xs where
   go :: [(String, Integer)] -> IO [String]
   go ((f,0):xs) = do
+   copyFile f (f ++ ".bak")
    withBinaryFile f ReadWriteMode fix
    go(xs) >>= \fs -> return $ f:fs
   go (_:xs) = go xs
@@ -77,5 +80,5 @@ main = do
   go args where
     go []  = runMain "."
     go [x] = runMain x
-    go (_:_:xs) = putStrLn "Invalid command. Args must be single path or blank"
+    go _   = putStrLn "Invalid command. Args must be single path or blank"
 
