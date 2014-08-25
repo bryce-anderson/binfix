@@ -49,8 +49,7 @@ collectCorrections b = validFiles >>= getCorrs where
 
   validFiles = do
     fs <- sort <$> getDirectoryContents b
-    let fss = filter (isSuffixOf "sfrm") fs
-    return $ map (FP.combine b) fss
+    return $ map (FP.combine b) $ filter (isSuffixOf "sfrm") fs
 
 fixCorrections :: [(FilePath, Integer)] -> IO [FilePath]
 fixCorrections all = go all 0 where
@@ -61,7 +60,7 @@ fixCorrections all = go all 0 where
                     pred (_,0) = False
                     pred _     = True
        mean = avgCorr neighbors 
-   putStrLn $ "Correcting file \"" ++ f ++ "\" With neighbors " ++ show neighbors
+   putStrLn $ mkStatus f neighbors 
    withBinaryFile f ReadWriteMode (fix mean)
    go(xs) (p+1) >>= \fs -> return $ f:fs
   go (_:xs) p = go xs (p+1)
@@ -71,6 +70,12 @@ fixCorrections all = go all 0 where
   fix mean h = do
     hSeek h AbsoluteSeek corrPos
     mapM_ (hPutChar h) $ show mean
+
+mkStatus :: FilePath -> [(FilePath, Integer)] -> String
+mkStatus f neighbors = foldl (++) header ns where
+   header = "Correcting file \"" ++ f ++ "\" with neighbors\n"
+   ns = map showi neighbors 
+   showi (f,i) = "\tFile: \"" ++ f ++ "\", Intensity: " ++ show i ++ "\n"
 
 runMain :: FilePath -> IO ()
 runMain basePath = do
