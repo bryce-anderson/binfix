@@ -85,7 +85,8 @@ runMain basePath = do
   putStrLn $ "Fixed files: " ++ show fixed
 
 main :: IO ()
-main = getArgs >>= go where
+main = putStrLn intro >> getArgs >>= go where
+  intro = "binfix Copyright 2014 Bryce Anderson\n"
   go []  = runMain "."
   go [p] = runMain p
   go _   = do
