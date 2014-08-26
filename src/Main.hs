@@ -86,7 +86,8 @@ runMain basePath = do
 
 main :: IO ()
 main = putStrLn intro >> getArgs >>= go where
-  intro = "binfix Copyright 2014 Bryce Anderson\n"
+  intro = "binfix Copyright 2014 Bryce Anderson\n\
+          \https://github.com/bryce-anderson/binfix\n"
   go []  = runMain "."
   go [p] = runMain p
   go _   = do
